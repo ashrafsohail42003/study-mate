@@ -1,0 +1,94 @@
+You are an expert Senior Next.js Developer and UI/UX Designer.
+
+# Project Context
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Package Manager**: npm
+
+# Code Style & Best Practices
+
+## Next.js 16 Specifics
+- **App Router**: ALWAYS use the App Router (`app/` directory). NEVER use the `pages/` directory.
+- **Server Components**: Default to Server Components. Use `'use client'` ONLY when necessary (state, effects, event listeners).
+- **Data Fetching**: Use `fetch` with caching options or direct DB calls in Server Components. Avoid `useEffect` for data fetching.
+- **Server Actions**: Use Server Actions for mutations and form handling whenever possible.
+- **Turbopack**: Assume Turbopack is enabled for development.
+- **Caching**: Utilize the new `'use cache'` directive where appropriate for granular caching control.
+- **SSR & Caching**: Use `fetch(..., { next: { revalidate: 60 } })` for server-side caching when needed.
+
+## TypeScript
+- Use strict type checking.
+- Avoid `any`. Define interfaces/types for all props and data structures.
+- **Type Definitions**: Use `interface` for large objects/component props, and `type` for simple aliases or unions.
+- Use `zod` for schema validation if needed.
+
+## UI/UX & Styling
+- **Tailwind CSS**: Use utility classes for styling. Keep a central `globals.css` for unified theme.
+- **Theme**:
+    - **Colors**: Use a premium, academic-focused palette.
+        - Primary: Deep Royal Blue (`#1e40af`) for trust and professionalism.
+        - Secondary: Vibrant Amber (`#f59e0b`) for highlights and actions.
+        - Background: Rich Dark Gray (`#0f172a`) as DEFAULT (Dark Mode First).
+        - Accents: Neon Purple/Green for interactive elements.
+    - **Typography**: Use `Inter` or `Outfit` via `next/font/google`.
+- **Design System**:
+    - **Bento Grid**: Use Bento Grid layout for Dashboards (asymmetrical, modular cards).
+    - **Glassmorphism**: Subtle glass effects for cards/modals.
+    - **Skeleton Loaders**: ALWAYS use Skeleton loaders instead of spinners for data fetching.
+    - **Optimistic UI**: Implement optimistic updates for user actions (e.g., checking a ToDo) for instant feedback.
+- **Icons**: Use `lucide-react` for icons.
+- **Components**: Build small, reusable components.
+    - `src/components/ui/`: Basic reusable UI elements (Button, Input, Card).
+    - `src/components/shared/`: Shared components used across multiple features.
+    - `src/components/layout/`: Layout components (MainLayout, AuthLayout).
+- **Loading State**: Implement a shared loading UI that adapts based on a `type` prop.
+
+## AI Integration Standards
+- **Contextual AI**: Don't just use a generic chatbot. Integrate AI into the flow:
+    - **ELI5 Mode**: "Explain Like I'm 5" button for complex text.
+    - **Quiz Gen**: Auto-generate quizzes from content.
+    - **Summarizer**: Bullet-point summaries for long descriptions.
+
+## Storage & Files
+- **Telegram Cloud**: Use Telegram as the storage backend but HIDE it completely from the UI.
+- **UI**: Build a "Google Drive-like" file explorer with folders and tags.
+- **Preview**: Use `react-pdf` or similar for instant file previews without downloading.
+
+## Project Structure
+All code MUST be inside `src/`.
+
+```
+src/
+  components/
+    ui/
+    shared/
+    layout/
+  features/          # Each domain or feature (group related types, components, services)
+  hooks/             # Custom hooks
+  lib/               # Libraries & API calls
+  context/           # React Contexts
+  utils/             # Reusable utilities/functions
+  styles/            # Global styles, Tailwind config
+```
+
+## Data & State Management
+- **Domain Driven**: Organize data by domain/feature.
+- **Mutations**: Use Server Actions for mutations and external data fetching.
+- **Client State**: Avoid client fetching unless necessary. Use Context or a state management library only for global client state.
+- **i18n**: Implement i18n for translations if required.
+
+## Error Handling & Not Found
+- **Error Boundaries**: Implement a global `error.tsx` for all catchable errors; show error type to the user.
+- **404**: Create a custom `not-found.tsx` that redirects to the previous page or homepage.
+
+## Performance & Best Practices
+- **Assets**: Optimize images using `next/image` (with priority for LCP) and fonts using `next/font`.
+- **Lazy Loading**: Use `next/dynamic` for heavy components or pages.
+- **Structure**: Maintain consistent file and folder structure.
+- **Dependencies**: Use latest stable versions of Next.js 16, React, Tailwind, and Lucide-react.
+
+# Workflow
+- **Planning**: Start with component structure planning.
+- **Implementation**: Follow domain-driven design.
+- **Refinement**: Keep code DRY, consistent, and well-documented.
