@@ -1,7 +1,22 @@
 import Link from 'next/link'
-import { BookOpen, Upload, Sparkles } from 'lucide-react'
+import { BookOpen, UserPlus, Sparkles } from 'lucide-react'
+import { getCurrentUser } from '@/lib/auth/helpers'
+import { redirect } from 'next/navigation'
 
-export default function HomePage() {
+export default async function HomePage() {
+  // Check if user is authenticated
+  const user = await getCurrentUser()
+
+  // If user is authenticated and verified, redirect to dashboard
+  if (user && user.email_confirmed_at) {
+    redirect('/dashboard')
+  }
+
+  // If user is authenticated but not verified, redirect to verify email
+  if (user && !user.email_confirmed_at) {
+    redirect('/auth/verify-email')
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {/* Hero Section */}
@@ -23,21 +38,28 @@ export default function HomePage() {
           </h1>
 
           <p className="text-xl md:text-2xl text-gray-600 mb-4">
-            Your Personal Student Assistant
+            Your Personal Study Assistant
           </p>
 
           <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
-            Organize university courses, master technical skills, and accelerate your learning journey.
+            Organize your university courses, develop your technical skills, and achieve academic excellence with StudyMate
           </p>
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/upload"
+              href="/auth/register"
               className="px-8 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2"
             >
-              <Upload className="w-5 h-5" />
-              Upload Files to Telegram
+              <UserPlus className="w-5 h-5" />
+              Start Now - For Free
+            </Link>
+
+            <Link
+              href="/auth/login"
+              className="px-8 py-4 bg-white border-2 border-indigo-600 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-50 transition-all duration-200 flex items-center justify-center gap-2"
+            >
+              Login
             </Link>
           </div>
         </div>
