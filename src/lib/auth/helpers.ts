@@ -20,7 +20,7 @@ export async function requireAuth() {
     const user = await getCurrentUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/login')
     }
 
     return user
@@ -30,7 +30,7 @@ export async function requireVerifiedEmail() {
     const user = await requireAuth()
 
     if (!user.email_confirmed_at) {
-        redirect('/auth/verify-email')
+        redirect('/verify-email')
     }
 
     return user

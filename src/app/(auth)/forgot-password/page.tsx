@@ -12,9 +12,9 @@ export default function ForgotPasswordPage() {
                         <KeyRound className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-                        نسيت كلمة المرور؟
+                        Forgot your password?
                     </h1>
-                    <p className="text-gray-600 mt-2">لا تقلق، سنساعدك في استعادتها</p>
+                    <p className="text-gray-600 mt-2">Don't worry, we'll help you recover it</p>
                 </div>
 
                 {/* Form Card */}
@@ -23,11 +23,11 @@ export default function ForgotPasswordPage() {
 
                     <div className="mt-6 pt-6 border-t border-gray-200 text-center">
                         <Link
-                            href="/auth/login"
+                            href="/login"
                             className="inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 font-medium"
                         >
                             <ArrowLeft className="w-4 h-4" />
-                            العودة إلى تسجيل الدخول
+                            Back to Login
                         </Link>
                     </div>
                 </div>

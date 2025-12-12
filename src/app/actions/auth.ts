@@ -69,7 +69,7 @@ export async function register(formData: FormData) {
                 // الحقل 'full_name' هنا هو حقل 'user_metadata' وهو string
                 full_name: fullName,
             },
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/callback`,
         },
     })
 
@@ -89,7 +89,7 @@ export async function register(formData: FormData) {
     // بما أنك قمت بتعطيل جزء إنشاء الـ profile يدوياً (لأنك تستخدم Trigger/Function في Supabase)، 
     // فسنترك الكود كما هو ليقوم Supabase باللازم.
 
-    redirect('/auth/verify-email')
+    redirect('/verify-email')
 }
 
 // ----------------------------------------------------
@@ -132,7 +132,7 @@ export async function login(formData: FormData) {
     }
 
     if (!data.user.email_confirmed_at) {
-        redirect('/auth/verify-email')
+        redirect('/verify-email')
     }
 
     redirect('/dashboard')
@@ -146,7 +146,7 @@ export async function login(formData: FormData) {
 export async function logout() {
     const supabase = await createClient()
     await supabase.auth.signOut()
-    redirect('/auth/login')
+    redirect('/login')
 }
 
 // ----------------------------------------------------
@@ -160,7 +160,7 @@ export async function loginWithOAuth(provider: 'google' | 'github') {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/callback`,
         },
     })
 
@@ -198,7 +198,7 @@ export async function forgotPassword(formData: FormData) {
     const { email } = validation.data
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`,
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
     })
 
     if (error) {
@@ -275,7 +275,7 @@ export async function resendVerificationEmail() {
         type: 'signup',
         email: user.email,
         options: {
-            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/callback`,
         },
     })
 
@@ -302,7 +302,7 @@ export async function updateProfile(formData: FormData) {
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/login')
     }
 
     const fullName = formData.get('fullName') as string

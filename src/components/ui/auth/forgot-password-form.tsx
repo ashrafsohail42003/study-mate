@@ -13,7 +13,7 @@ function SubmitButton() {
             disabled={pending}
             className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
-            {pending ? 'جاري الإرسال...' : 'إرسال رابط إعادة التعيين'}
+            {pending ? 'Sending...' : 'Send Reset Link'}
         </button>
     )
 }
@@ -26,9 +26,9 @@ export function ForgotPasswordForm() {
         const result = await forgotPassword(formData)
 
         if (result.success) {
-            setMessage({ type: 'success', text: result.message || 'تم الإرسال بنجاح' })
+            setMessage({ type: 'success', text: result.message || 'Sent successfully' })
         } else {
-            setMessage({ type: 'error', text: result.error || 'حدث خطأ' })
+            setMessage({ type: 'error', text: result.error || 'An error occurred' })
         }
     }
 
@@ -37,8 +37,8 @@ export function ForgotPasswordForm() {
             {message && (
                 <div
                     className={`px-4 py-3 rounded-xl text-sm ${message.type === 'success'
-                            ? 'bg-green-50 border border-green-200 text-green-700'
-                            : 'bg-red-50 border border-red-200 text-red-700'
+                        ? 'bg-green-50 border border-green-200 text-green-700'
+                        : 'bg-red-50 border border-red-200 text-red-700'
                         }`}
                 >
                     {message.text}
@@ -47,7 +47,7 @@ export function ForgotPasswordForm() {
 
             <div>
                 <label htmlFor="email" className="block font-semibold mb-2 text-gray-700">
-                    البريد الإلكتروني
+                    Email Address
                 </label>
                 <input
                     id="email"
@@ -58,7 +58,7 @@ export function ForgotPasswordForm() {
                     required
                 />
                 <p className="text-sm text-gray-500 mt-2">
-                    سنرسل لك رابط إعادة تعيين كلمة المرور
+                    We will send you a password reset link
                 </p>
             </div>
 

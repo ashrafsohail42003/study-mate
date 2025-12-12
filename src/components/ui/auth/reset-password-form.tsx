@@ -32,7 +32,7 @@ export function ResetPasswordForm() {
             setMessage({ type: 'success', text: result.message || 'تم التعيين بنجاح' })
             // Redirect to login after 2 seconds
             setTimeout(() => {
-                router.push('/auth/login')
+                router.push('/login')
             }, 2000)
         } else {
             setMessage({ type: 'error', text: result.error || 'حدث خطأ' })
@@ -54,8 +54,8 @@ export function ResetPasswordForm() {
             {message && (
                 <div
                     className={`px-4 py-3 rounded-xl text-sm ${message.type === 'success'
-                            ? 'bg-green-50 border border-green-200 text-green-700'
-                            : 'bg-red-50 border border-red-200 text-red-700'
+                        ? 'bg-green-50 border border-green-200 text-green-700'
+                        : 'bg-red-50 border border-red-200 text-red-700'
                         }`}
                 >
                     {message.text}

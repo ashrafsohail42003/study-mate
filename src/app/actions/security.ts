@@ -11,7 +11,17 @@ const passwordSchema = z.object({
     path: ['confirmPassword']
 });
 
-export async function updatePassword(_prevState: any, formData: FormData) {
+export type ActionState = {
+    success?: boolean;
+    error?: string;
+    fieldErrors?: {
+        newPassword?: string[];
+        confirmPassword?: string[];
+    };
+    message?: string;
+};
+
+export async function updatePassword(_prevState: any, formData: FormData): Promise<ActionState> {
     try {
         const supabase = await createClient();
 
@@ -46,6 +56,7 @@ export async function updatePassword(_prevState: any, formData: FormData) {
         });
 
         if (error) {
+            console.error('Password update error:', error);
             return {
                 success: false,
                 error: error.message,

@@ -1,24 +1,15 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import { geistSans, geistMono } from "@/components/ui/fonts";
+"use client";
 
+import '@/app/globals.css';
+import { AuthProvider } from "@/context/SessionProvider";
 
-export const metadata: Metadata = {
-  title: "StudyMate - Your Personal Student Assistant",
-  description: "Organize your university courses, track your learning progress, and achieve academic excellence with your AI-powered study companion.",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" dir="ltr">
+      <body>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

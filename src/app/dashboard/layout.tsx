@@ -3,7 +3,7 @@ import { getUserMetadata, requireAuth } from '@/lib/auth/helpers'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { calculateProfileCompletion } from '@/features/profile/utils/completion'
-import { CompletionWidget } from '@/components/settings/CompletionWidget'
+import { CompletionWidget } from "@/features/settings/components/CompletionWidget";
 
 export default async function DashboardLayout({
     children,
@@ -20,7 +20,7 @@ export default async function DashboardLayout({
         // If auth passed but metadata failed (rare, but good to handle)
         // Optionally log the user out or redirect to login
         // For simplicity, we redirect to login to restart the session
-        redirect('/auth/login')
+        redirect('/login')
     }
 
     // 3. Fetch full profile for completion status

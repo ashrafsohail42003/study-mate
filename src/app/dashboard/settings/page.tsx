@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { SettingsLayout } from '@/components/settings/SettingsLayout';
+import { SettingsLayout } from "@/features/settings/components/SettingsLayout";
 import { calculateProfileCompletion } from '@/features/profile/utils/completion';
 
 export const metadata = {
@@ -14,7 +14,7 @@ export default async function SettingsPage() {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
-        redirect('/auth/login');
+        redirect('/login');
     }
 
     const { data: profile } = await supabase
@@ -25,7 +25,7 @@ export default async function SettingsPage() {
 
     if (!profile) {
         // Handle edge case where auth user exists but profile doesn't (shouldn't happen with triggers)
-        redirect('/auth/login');
+        redirect('/login');
     }
 
     const completion = calculateProfileCompletion(profile);

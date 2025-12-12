@@ -37,11 +37,11 @@ export async function middleware(request: NextRequest) {
     // Public routes that don't require authentication
     const publicRoutes = [
         '/',
-        '/auth/login',
-        '/auth/register',
-        '/auth/forgot-password',
-        '/auth/reset-password',
-        '/auth/callback',
+        '/login',
+        '/register',
+        '/forgot-password',
+        '/reset-password',
+        '/callback',
     ]
 
     // Routes that require authentication
@@ -50,12 +50,12 @@ export async function middleware(request: NextRequest) {
     // Check if current path is protected
     const isProtectedRoute = protectedRoutes.some(route => path.startsWith(route))
     const isPublicRoute = publicRoutes.includes(path)
-    const isAuthRoute = path.startsWith('/auth')
+    const isAuthRoute = path.startsWith('/')
 
     // If user is not authenticated and trying to access protected route
     if (!user && isProtectedRoute) {
         const url = request.nextUrl.clone()
-        url.pathname = '/auth/login'
+        url.pathname = '/login'
         return NextResponse.redirect(url)
     }
 
@@ -64,21 +64,21 @@ export async function middleware(request: NextRequest) {
         const emailVerified = user.email_confirmed_at !== null
 
         // If email is not verified, only allow access to verify-email page
-        if (!emailVerified && path !== '/auth/verify-email') {
+        if (!emailVerified && path !== '/verify-email') {
             const url = request.nextUrl.clone()
-            url.pathname = '/auth/verify-email'
+            url.pathname = '/verify-email'
             return NextResponse.redirect(url)
         }
 
         // If email is verified and user is on verify-email page, redirect to dashboard
-        if (emailVerified && path === '/auth/verify-email') {
+        if (emailVerified && path === '/verify-email') {
             const url = request.nextUrl.clone()
             url.pathname = '/dashboard'
             return NextResponse.redirect(url)
         }
 
         // If user is verified and trying to access auth pages (except callback), redirect to dashboard
-        if (emailVerified && isAuthRoute && path !== '/auth/callback') {
+        if (emailVerified && isAuthRoute && path !== '/callback') {
             const url = request.nextUrl.clone()
             url.pathname = '/dashboard'
             return NextResponse.redirect(url)

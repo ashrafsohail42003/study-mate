@@ -6,7 +6,7 @@ export default async function VerifyEmailPage() {
     const user = await getCurrentUser()
 
     if (!user) {
-        redirect('/auth/login')
+        redirect('/login')
     }
 
     if (user.email_confirmed_at) {
