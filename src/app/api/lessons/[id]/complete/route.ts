@@ -1,7 +1,8 @@
 
 import { NextRequest } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
-import { successResponse, errorResponse, handleApiError } from '@/lib/api-response';
+import { successResponse, errorResponse, handleApiError } from '@/lib/api/response';
 
 export async function POST(
     request: NextRequest,
@@ -54,7 +55,7 @@ export async function POST(
 
         // 4. Update XP (Lesson XP - assume 10xp per lesson for now, or fetch from DB if we had a column)
         const LESSON_XP = 10;
-        await supabase.rpc('increment_xp', { user_id_param: user.id, amount: LESSON_XP });
+        // await supabase.rpc('increment_xp', { amount: 10, user_id: user.id });
         // Note: 'increment_xp' is a stored procedure we assume exists or we do it manually:
         // Since we don't have the RPC, let's do it manually for now (though race conditions exist, it's fine for MVP)
         const { data: profile } = await supabase.from('profiles').select('xp').eq('id', user.id).single();
@@ -62,11 +63,17 @@ export async function POST(
         await supabase.from('profiles').update({ xp: newXp }).eq('id', user.id);
 
         // 5. Check Course Completion
-        // Count total lessons
-        const { count: totalLessons } = await supabase
-            .from('lessons')
-            .select('*', { count: 'exact', head: true })
-            .eq('course_id', lesson.course_id);
+        // Count total lessons (only if course_id exists)
+        if (lesson.course_id) {
+            const { count: totalLessons } = await supabase
+                .from('lessons')
+                .select('*', { count: 'exact', head: true })
+                .eq('course_id', lesson.course_id);
+        }
+
+        if (lesson.course_id) {
+            revalidatePath(`/course/${lesson.course_id}`);
+        }
 
         // Count completed lessons
         // This query requires a join or a second query.
