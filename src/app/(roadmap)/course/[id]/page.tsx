@@ -1,48 +1,41 @@
-import { createClient } from "@/lib/supabase/server";
 import { notFound, redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
 import Course from "@/features/courses/components/Course";
+import {
+    getCourseData,
+    getUserProgress,
+} from "@/features/courses/data/course.data";
 
-export default async function CoursePage({ params }: { params: Promise<{ id: string }> }) {
+interface CoursePageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default async function CoursePage({ params }: CoursePageProps) {
+    // ✅ Next.js 16: params Promise
     const { id } = await params;
+
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!user) {
-        redirect('/login');
-    }
+    if (!user) redirect("/login");
 
-    // Fetch Course
-    const { data: course, error: courseError } = await supabase
-        .from('courses')
-        .select('*')
-        .eq('id', id)
-        .single();
+    const { course, lessons } = await getCourseData(id);
+    if (!course) notFound();
 
-    if (courseError || !course) {
-        notFound();
-    }
-
-    // Fetch Lessons
-    const { data: lessons } = await supabase
-        .from('lessons')
-        .select('id, title, duration, order_index')
-        .eq('course_id', id)
-        .order('order_index');
-
-    // Fetch Progress
-    const { data: progress } = await supabase
-        .from('user_lesson_progress')
-        .select('lesson_id, status')
-        .eq('user_id', user.id)
-        .in('lesson_id', lessons?.map(l => l.id) || []);
+    const progress = await getUserProgress(
+        user.id,
+        lessons.map((l) => l.id)
+    );
 
     return (
-        <div style={{ padding: "100px" }}>
+        <div className="px-10 py-20">
             <Course
                 id={course.id}
                 courseTitle={course.title}
-                lessons={lessons || []}
-                progress={progress || []}
+                lessons={lessons}
+                progress={progress}
             />
         </div>
     );

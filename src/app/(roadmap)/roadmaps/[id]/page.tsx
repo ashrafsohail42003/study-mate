@@ -21,7 +21,6 @@ export default async function RoadmapDetailsPage({ params }: { params: { id: str
   if (error || !roadmap) {
     notFound();
   }
-
   // Fetch courses for this roadmap
   const { data: roadmapCourses } = await supabase
     .from('roadmap_courses')
@@ -70,7 +69,7 @@ export default async function RoadmapDetailsPage({ params }: { params: { id: str
                     {index + 1}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-xl font-semibold mb-2">{course.title}</h3>
+                    <h3 className="text-xl font-semibold mb-2 hover:underline hover:text-primary hover:cursor-pointer"><Link href={`/course/${course.id}`}>{course.title}</Link></h3>
                     <p className="text-text-secondary text-sm">{course.description}</p>
                   </div>
                 </div>

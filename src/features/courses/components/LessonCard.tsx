@@ -1,71 +1,107 @@
-import rigthArrow from "../../../public/rightArrow.svg"
-import downArrow from "../../../public/downArrow.svg"
-import { useState } from "react"
-import Link from "next/link"
-import TimeNeeded from "./TimeNeeded"
+"use client";
 
-type lessonCardProps = {
+import { useState, useCallback } from "react";
+import Link from "next/link";
+import { ChevronRight, ChevronDown } from "lucide-react";
+import clsx from "clsx";
+import TimeNeeded from "./TimeNeeded";
+
+interface LessonCardProps {
     lesson: {
-        id: string,
-        title: string
-        content?: string | null,
-        timeRequired: number,
-        status: string,
-        order?: number | null
-    },
-    isActive?: boolean
+        id: string;
+        title: string;
+        timeRequired: number;
+        status: string;
+        order?: number | null;
+    };
+    isActive?: boolean;
 }
-export default function LessonCard({ lesson, isActive }: lessonCardProps) {
-    const [isLessonOpened, setIsLessonOpened] = useState(false)
-    function handleOnClick() {
-        setIsLessonOpened(!isLessonOpened)
-    }
 
-    function handleStatusText() {
-        if (lesson.status == "Completed")
-            return <h4 className="text-accent">({lesson.status})</h4>
-        else if (lesson.status == "In Progress")
-            return <h4 className="text-primary">({lesson.status})</h4>
-        else
-            return <h4 className="text-text-secondary">({lesson.status})</h4>
-    }
+const STATUS_STYLES: Record<
+    string,
+    { border: string; text: string }
+> = {
+    Completed: {
+        border: "bg-accent",
+        text: "text-accent",
+    },
+    "In Progress": {
+        border: "bg-primary",
+        text: "text-primary",
+    },
+    "Not Started": {
+        border: "bg-border",
+        text: "text-muted-foreground",
+    },
+};
 
-    function handleStatusLine() {
-        if (lesson.status == "Completed")
-            return <div className="h-full w-[0.2%] bg-accent"></div>
-        else if (lesson.status == "In Progress")
-            return <div className="h-full w-[0.2%] bg-primary"></div>
-        else
-            return <div className="h-full w-[0.2%] bg-border"></div>
-    }
+export default function LessonCard({
+    lesson,
+    isActive,
+}: LessonCardProps) {
+    const [open, setOpen] = useState(false);
+    const toggle = useCallback(
+        () => setOpen((p) => !p),
+        []
+    );
 
-    return (<div className="flex flex-row">
+    const style = STATUS_STYLES[lesson.status];
 
-        {handleStatusLine()}
-        <div className={`border border-border bg-card-bg p-[20px] flex flex-col gap-[20px] w-[99.8%] ${isActive ? 'bg-zinc-100 dark:bg-zinc-800' : ''}`}>
-            <div className="flex flex-row items-center justify-between">
-                <div className="flex flex-col gap-[5px]">
-                    <div className="flex flex-row gap-[5px]">
-                        <Link className="text-text-primary" href={`/lesson/${lesson.id}`} >
-                            <h4 className={isActive ? "font-bold" : ""}> {lesson.title} </h4>
-                        </Link>
-                        {handleStatusText()}
+    return (
+        <div className="flex">
+            <div className={clsx("w-[2px]", style.border)} />
+
+            <div
+                className={clsx(
+                    "border border-border bg-card-bg p-5 w-full transition-colors",
+                    isActive && "bg-zinc-100 dark:bg-zinc-800"
+                )}
+            >
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="flex gap-2 items-center">
+                            <Link href={`/lesson/${lesson.id}`}>
+                                <h4
+                                    className={clsx(
+                                        "hover:underline",
+                                        isActive && "font-bold"
+                                    )}
+                                >
+                                    {lesson.title}
+                                </h4>
+                            </Link>
+                            <span className={clsx("text-sm", style.text)}>
+                                ({lesson.status})
+                            </span>
+                        </div>
+
+                        <TimeNeeded minutes={lesson.timeRequired} />
                     </div>
-                    <TimeNeeded minutes={lesson.timeRequired} />
+
+                    <button
+                        onClick={toggle}
+                        aria-label="Toggle lesson"
+                        className="p-1 rounded hover:bg-muted"
+                    >
+                        {open ? (
+                            <ChevronDown size={18} />
+                        ) : (
+                            <ChevronRight size={18} />
+                        )}
+                    </button>
                 </div>
 
-                <img
-                    className="w-[15px] text-border cursor-pointer"
-                    onClick={handleOnClick}
-                    src={isLessonOpened ? downArrow.src : rigthArrow.src}
-                />
+                {open && (
+                    <div className="ml-5 mt-3">
+                        <Link
+                            href={`/lesson/${lesson.id}`}
+                            className="underline text-sm"
+                        >
+                            Continue Lesson
+                        </Link>
+                    </div>
+                )}
             </div>
-            {isLessonOpened && <div className="ml-[20px] flex flex-col gap-[10px]">
-                {lesson.content && <p>{lesson.content}</p>}
-                {/* send the lesson by link */}
-                <Link className="text-text-primary underline" href={`/lesson/${lesson.id}`} >Continue Lesson</Link>
-            </div>}
-
         </div>
-    </div>)
+    );
 }

@@ -24,7 +24,7 @@ export default function Course({ id, courseTitle, lessons, progress, currentLess
   return (<div className="flex flex-col gap-[50px]">
     {courseTitle && <Title title={courseTitle} />}
     <div className="overflow-y-scroll h-[700px] pr-2">
-      {lessons.map((lesson) => (
+      {lessons.length > 0 ? lessons.map((lesson) => (
         <LessonCard
           key={lesson.id}
           lesson={{
@@ -32,12 +32,11 @@ export default function Course({ id, courseTitle, lessons, progress, currentLess
             title: lesson.title,
             status: getLessonStatus(lesson.id),
             timeRequired: lesson.duration || 0,
-            content: '', // Or undefined if you prefer
             order: lesson.order_index
           }}
           isActive={currentLessonId === lesson.id}
         />
-      ))}
+      )) : <p>No lessons found</p>}
     </div>
   </div>)
 }

@@ -1,81 +1,84 @@
-import { ArrowLeft } from "lucide-react"
-import TimeNeeded from "@/features/courses/components/TimeNeeded"
-import Title from "@/components/ui/SectionTitle"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { useState, useTransition } from "react"
-import Course from "@/features/courses/components/Course"
-import { Database } from '@/types/database.types';
-import { markLessonComplete } from "@/app/actions/lessons"
-import { useRouter } from "next/navigation"
+"use client";
 
-type LessonType = Database['public']['Tables']['lessons']['Row'];
-type CourseType = Database['public']['Tables']['courses']['Row'];
-type ProgressType = Database['public']['Tables']['user_lesson_progress']['Row'];
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import Course from "@/features/courses/components/Course";
+import TimeNeeded from "@/features/courses/components/TimeNeeded";
+import Title from "@/components/ui/SectionTitle";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { markLessonComplete } from "@/app/actions/lessons";
+import { Database } from "@/types/database.types";
+
+type LessonType = Database["public"]["Tables"]["lessons"]["Row"];
+type CourseType = Database["public"]["Tables"]["courses"]["Row"];
+type ProgressType =
+    Database["public"]["Tables"]["user_lesson_progress"]["Row"];
 
 interface LessonProps {
     lesson: LessonType;
     course: CourseType | null;
     userProgress: ProgressType | null;
-    courseLessons: Pick<LessonType, 'id' | 'title' | 'duration' | 'order_index'>[];
-    allProgress: Pick<ProgressType, 'lesson_id' | 'status'>[];
+    courseLessons: any[];
+    allProgress: any[];
 }
 
-export default function Lesson({ lesson, course, userProgress, courseLessons, allProgress }: LessonProps) {
-    const router = useRouter()
-    const [isPending, startTransition] = useTransition()
-    const isCompleted = userProgress?.status === 'Completed'
+export default function Lesson({
+    lesson,
+    course,
+    userProgress,
+    courseLessons,
+    allProgress,
+}: LessonProps) {
+    const router = useRouter();
+    const [pending, startTransition] = useTransition();
 
-    const handleMarkDone = () => {
+    const isCompleted =
+        userProgress?.status === "Completed";
+
+    const markDone = () =>
         startTransition(async () => {
-            const result = await markLessonComplete(lesson.id);
-            if (result.success) {
-                // Ideally router.refresh() is handled by revalidatePath in action, but we can double check
-                router.refresh();
-            }
+            await markLessonComplete(lesson.id);
+            router.refresh();
         });
-    }
-
-    const borderColor = isCompleted ? "var(--color-accent)" : "var(--color-primary)";
 
     return (
-        <div className="p-[100px] flex flex-row gap-[50px]">
-            <div className="w-[30%]">
+        <div className="p-[100px] flex gap-12">
+            <aside className="w-[30%]">
                 <Course
-                    id={lesson.course_id || ''}
-                    currentLessonId={lesson.id}
+                    id={lesson.course_id!}
+                    courseTitle={course?.title ?? ""}
                     lessons={courseLessons}
                     progress={allProgress}
-                    courseTitle={course?.title || ''}
+                    currentLessonId={lesson.id}
                 />
-            </div>
-            <div style={{ borderColor }} className="border-2 p-[50px] bg-card-bg rounded-lg flex flex-col gap-[40px] mt-[85px] w-[70%]">
-                <div className="flex flex-row items-center justify-between">
+            </aside>
+
+            <main className="w-[70%] border-2 p-[50px] rounded-lg">
+                <div className="flex justify-between">
                     <div>
                         <Title title={lesson.title} />
-                        <nav className="flex items-center text-text-secondary">
-                            (<TimeNeeded minutes={lesson.duration || 0} />)
-                        </nav>
+                        <TimeNeeded minutes={lesson.duration ?? 0} />
                     </div>
+
                     <div className="flex gap-2">
                         <Link href={`/course/${lesson.course_id}`}>
-                            <Button variant="outline">
-                                Back to Course
-                            </Button>
+                            <Button variant="outline">Back</Button>
                         </Link>
+
                         <Button
-                            onClick={handleMarkDone}
-                            disabled={isPending || isCompleted}
-                            className={isCompleted ? "bg-green-600 hover:bg-green-700 text-white" : ""}
+                            onClick={markDone}
+                            disabled={pending || isCompleted}
                         >
-                            {isCompleted ? 'Completed' : (isPending ? 'Updating...' : 'Mark Done')}
+                            {isCompleted ? "Completed" : "Mark Done"}
                         </Button>
                     </div>
                 </div>
-                <article className="w-[90ch] text-wrap whitespace-pre-line">
+
+                <article className="mt-8 whitespace-pre-line">
                     {lesson.content}
                 </article>
-            </div>
+            </main>
         </div>
-    )
+    );
 }
