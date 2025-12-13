@@ -1,15 +1,13 @@
 "use client";
-import RoadmapCard from "@/features/roadmaps/components/Roadmap";
-import { useState, useEffect } from "react";
-import { Database } from '@/types/database.types';
+
+import { useState, useTransition } from "react";
+import RoadmapCard from "@/features/roadmaps/components/Roadmap"; // تأكد من المسار
 import RoadmapConfirmModal from "./RoadmapConfirmModal";
+import { getRoadmapCourses } from "@/app/actions/roadmaps"; // استدعاء الأكشن
+import { Database } from '@/types/database.types';
+import { toast } from "sonner"; // أو أي مكتبة تنبيهات تستخدمها
 
-type Roadmap = Database['public']['Tables']['roadmaps']['Row'];
-
-type RoadmapsClientProps = {
-    roadmaps: Pick<Roadmap, 'id' | 'title' | 'description' | 'icon' | 'color'>[];
-    currentRoadmapId: string | null;
-};
+type Roadmap = Pick<Database['public']['Tables']['roadmaps']['Row'], 'id' | 'title' | 'description' | 'icon' | 'color'>;
 
 type Course = {
     id: string;
@@ -17,100 +15,106 @@ type Course = {
     description: string | null;
 };
 
+type RoadmapsClientProps = {
+    roadmaps: Roadmap[];
+    currentRoadmapId: string | null;
+};
+
 export default function RoadmapsClient({ roadmaps, currentRoadmapId }: RoadmapsClientProps) {
-    const [selectedId, setSelectedId] = useState(currentRoadmapId || "");
-    const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
+    const [selectedId, setSelectedId] = useState<string>(currentRoadmapId || "");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [courses, setCourses] = useState<Course[]>([]);
-    const [isLoadingCourses, setIsLoadingCourses] = useState(false);
 
+    const [isPending, startTransition] = useTransition();
+
+    const selectedRoadmap = roadmaps.find((r) => r.id === selectedId);
+    const hasCurrentRoadmap = !!currentRoadmapId;
+    const isCurrentSelected = currentRoadmapId === selectedId;
     const handleSelect = (id: string) => {
         setSelectedId(id);
-        const roadmap = roadmaps.find((r) => r.id === id);
-        if (roadmap) {
-            setSelectedTitle(roadmap.title);
-        } else {
-            setSelectedTitle(null);
-        }
     };
 
-    const handleContinueClick = async () => {
+    const handleContinueClick = () => {
         if (!selectedId) return;
 
-        setIsLoadingCourses(true);
-        try {
-            // Fetch roadmap courses
-            const response = await fetch(`/api/roadmaps/${selectedId}`);
-            if (response.ok) {
-                const data = await response.json();
-                const roadmapData = data.data;
+        startTransition(async () => {
+            const result = await getRoadmapCourses(selectedId);
 
-                // Extract courses from roadmap_courses junction table
-                const fetchedCourses = roadmapData.courses?.map((rc: any) => rc.course).filter(Boolean) || [];
-                setCourses(fetchedCourses);
+            if (result.success && result.data) {
+                setCourses(result.data);
                 setIsModalOpen(true);
             } else {
-                alert('Failed to load roadmap details');
+                toast.error("error loading courses");
             }
-        } catch (error) {
-            console.error('Error fetching roadmap:', error);
-            alert('An error occurred while loading roadmap details');
-        } finally {
-            setIsLoadingCourses(false);
-        }
+        });
     };
 
-    const selectedRoadmap = roadmaps.find(r => r.id === selectedId);
-    const hasCurrentRoadmap = !!currentRoadmapId;
-    const buttonText = hasCurrentRoadmap ? 'Change Current Roadmap' : `Continue with ${selectedTitle}`;
-
     return (
-        <>
-            <div className="p-[100px] flex flex-col gap-[100px] items-center justify-between">
-                <h1 className="text-text-primary text-3xl font-bold">Choose Your Roadmap</h1>
+        <main className="min-h-screen w-full bg-background py-12 px-4 md:px-8 lg:px-16 flex flex-col items-center gap-10">
+            {/* Header Section */}
+            <div className="text-center space-y-4 max-w-2xl">
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground tracking-tight">
+                    Choose Your <span className="text-primary">Path</span>
+                </h1>
+                <p className="text-muted-foreground text-base md:text-lg">
+                    Select the roadmap that aligns with your career goals. You can switch at any time.
+                </p>
+            </div>
 
-                <div className="flex flex-row gap-[50px] items-center flex-wrap justify-center">
-                    {roadmaps.length === 0 ? (
-                        <p className="text-text-secondary">No roadmaps available at the moment.</p>
-                    ) : (
-                        roadmaps.map((roadmap) => (
-                            <RoadmapCard
-                                key={roadmap.id}
-                                roadmap={roadmap}
-                                onSelect={handleSelect}
-                                isSelected={roadmap.id === selectedId}
-                            />
-                        ))
-                    )}
-                </div>
+            {/* Grid Section - Responsive & Clean */}
+            <div className="w-full max-w-7xl grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+                {roadmaps.length > 0 ? (
+                    roadmaps.map((roadmap) => (
+                        <RoadmapCard
+                            key={roadmap.id}
+                            roadmap={roadmap}
+                            onSelect={handleSelect}
+                            isSelected={roadmap.id === selectedId}
+                        />
+                    ))
+                ) : (
+                    <div className="col-span-full flex flex-col items-center justify-center py-20 text-muted-foreground">
+                        <p>No roadmaps available at the moment.</p>
+                    </div>
+                )}
+            </div>
 
-                {selectedTitle && (
-                    <button
-                        onClick={handleContinueClick}
-                        disabled={isLoadingCourses}
-                        className="group inline-flex items-center gap-3 px-6 py-3 rounded-xl
-                       bg-primary text-white font-semibold text-lg shadow-md
-                       hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 hover:cursor-pointer hover:bg-red-500
-                       disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                    >
-                        {isLoadingCourses ? (
+            <div className={`transition-all duration-500 ease-in-out ${selectedId ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                <button
+                    onClick={handleContinueClick}
+                    disabled={isPending || !selectedId}
+                    className={`
+                        group relative overflow-hidden rounded-full px-8 py-4 font-semibold text-white shadow-xl transition-all hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-70
+                        ${isCurrentSelected ? 'bg-orange-500 hover:bg-orange-600' : 'bg-primary hover:bg-primary/90'}
+                    `}
+                >
+                    <span className="relative flex items-center gap-3">
+                        {isPending ? (
                             <>
-                                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                <svg className="h-5 w-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                                 </svg>
-                                Loading...
+                                <span>Loading details...</span>
                             </>
                         ) : (
                             <>
-                                {buttonText}
-                                <span className="transition-transform group-hover:translate-x-1">
-                                    ➜
+                                <span>
+                                    {isCurrentSelected ? `Continue with ${selectedRoadmap?.title}` : `Change Current Roadmap to ${selectedRoadmap?.title}`}
                                 </span>
+                                <svg
+                                    className="h-5 w-5 transition-transform group-hover:translate-x-1"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
                             </>
                         )}
-                    </button>
-                )}
+                    </span>
+                </button>
             </div>
 
             {selectedRoadmap && (
@@ -125,6 +129,6 @@ export default function RoadmapsClient({ roadmaps, currentRoadmapId }: RoadmapsC
                     hasCurrentRoadmap={hasCurrentRoadmap}
                 />
             )}
-        </>
+        </main>
     );
 }

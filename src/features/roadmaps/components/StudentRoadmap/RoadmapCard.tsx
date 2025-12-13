@@ -1,23 +1,23 @@
 'use client'
 import { useRouter } from "next/navigation"
-import ProgressBar from "./ProgressBar"
 import { Button } from "@/components/ui/button"
-
-type LessonInfo = {
+import ProgressBar from "./ProgressBar"
+type LessonProgress = {
     id: string;
-    course_id: string | null;
+    course_id: string;
     title: string;
     duration: number;
     order: number;
+    isCompleted: boolean;
 };
 
 type CourseWithProgress = {
     id: string;
     title: string;
     description: string;
-    status: string;
+    status: 'completed' | 'in progress' | 'not started';
     donePercentage: number;
-    lessons: LessonInfo[];
+    lessons: LessonProgress[];
 };
 
 type RoadmapCardProps = {
@@ -27,43 +27,72 @@ type RoadmapCardProps = {
 export default function RoadmapCard({ course }: RoadmapCardProps) {
     const router = useRouter();
 
-    function handleRoadmapCardOnClick() {
-        router.push(`/course/${course.id}`);
-    }
+    const firstIncompleteLesson = course.lessons.find(l => !l.isCompleted);
+    const currentLesson = firstIncompleteLesson || course.lessons[0];
 
-    // Find first incomplete lesson or the first lesson
-    const currentLesson = course.lessons.find((l) => l.order > 0) || course.lessons[0];
     const lessonNumber = currentLesson?.order || 1;
+    const lessonActionTitle = currentLesson ? currentLesson.title : 'No Lessons Yet';
+
+    const buttonText = course.status === 'completed' ? 'Review Course' :
+        course.status === 'in progress' ? 'Continue Lesson' : 'Start Course';
+
+    const handleRoadmapCardClick = () => {
+        router.push(`/course/${course.id}`);
+    };
 
     return (
-        <div
-            className="rounded-md bg-card-bg flex flex-row gap-5 shadow-md cursor-pointer hover:shadow-lg transition-shadow"
-            onClick={handleRoadmapCardOnClick}
+        <article
+            className="rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-4 md:p-6 shadow-lg hover:shadow-xl transition-all duration-300 grid grid-cols-1 md:grid-cols-4 gap-4"
+            role="button"
+            tabIndex={0}
+            // onClick={handleRoadmapCardClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    handleRoadmapCardClick();
+                }
+            }}
         >
-            <div className="flex flex-col items-start bg-primary p-[30px] rounded-l-md text-white gap-5 w-1/4">
-                <p className="text-xs uppercase tracking-wide">COURSE</p>
-                <h1 className="text-xl font-bold">{course.title}</h1>
-                <p className="text-sm opacity-90">{course.description}</p>
-                <p className="text-xs uppercase">({course.status})</p>
-            </div>
-            <div className="p-[30px] w-3/4 flex flex-col gap-5">
-                <div className="flex flex-row items-center justify-between">
-                    <p className="text-sm text-text-secondary">
-                        {course.lessons.length > 0
-                            ? `LESSON ${lessonNumber} OF ${course.lessons.length}`
-                            : 'NO LESSONS'}
+            <header className="md:col-span-1 bg-primary text-white p-4 rounded-lg flex flex-col justify-between gap-2">
+                <p className="text-xs uppercase tracking-widest opacity-80">Course</p>
+                <h2 className="text-lg font-bold">{course.title}</h2>
+                <p className="text-sm opacity-90 line-clamp-2">{course.description}</p>
+                <span className={`text-xs font-semibold px-2 py-1 rounded-full w-fit ${course.status === 'completed' ? 'bg-green-600' : 'bg-yellow-600'
+                    }`}>
+                    {course.status.toUpperCase()}
+                </span>
+            </header>
+
+            <div className="md:col-span-2 flex flex-col justify-between gap-4 py-1">
+                <div className="space-y-2">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                        PROGRESS: {course.donePercentage}% Done
                     </p>
-                    <div style={{ width: "40%" }}>
-                        <ProgressBar donePersantage={course.donePercentage} />
-                    </div>
+                    <ProgressBar donePersantage={course.donePercentage} />
                 </div>
-                <h1 className="w-[30ch] text-lg font-semibold">
-                    {currentLesson?.title || 'Start Learning'}
-                </h1>
-                <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                    <Button onClick={handleRoadmapCardOnClick}>Continue</Button>
+
+                <div className="space-y-1">
+                    <p className="text-xs uppercase text-gray-400 dark:text-gray-500">Next Step</p>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white line-clamp-1">
+                        {lessonActionTitle}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Lesson {lessonNumber} of {course.lessons.length}
+                    </p>
                 </div>
             </div>
-        </div>
+
+            <div className="md:col-span-1 flex items-center justify-end md:justify-center">
+                <Button
+                    className="hover:cursor-pointer bg-primary hover:bg-primary/80 text-white"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        handleRoadmapCardClick();
+                    }}
+                    aria-label={buttonText + ' ' + course.title}
+                >
+                    {buttonText}
+                </Button>
+            </div>
+        </article>
     );
 }

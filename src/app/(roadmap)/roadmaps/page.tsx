@@ -4,28 +4,30 @@ import RoadmapsClient from "@/components/ui/roadmap/RoadmapsClient";
 
 export default async function RoadmapsPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!user) {
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
     redirect('/login');
   }
 
-  const { data: roadmaps } = await supabase
-    .from('roadmaps')
-    .select('id, title, description, icon, color')
-    .eq('is_active', true)
-    .order('created_at');
+  const [roadmapsResult, profileResult] = await Promise.all([
+    supabase
+      .from('roadmaps')
+      .select('id, title, description, icon, color')
+      .eq('is_active', true)
+      .order('created_at'),
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('current_roadmap_id')
-    .eq('id', user.id)
-    .single();
+    supabase
+      .from('profiles')
+      .select('current_roadmap_id')
+      .eq('id', user.id)
+      .maybeSingle()
+  ]);
 
   return (
     <RoadmapsClient
-      roadmaps={roadmaps || []}
-      currentRoadmapId={profile?.current_roadmap_id || null}
+      roadmaps={roadmapsResult.data || []}
+      currentRoadmapId={profileResult.data?.current_roadmap_id || null}
     />
   );
 }

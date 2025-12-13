@@ -1,38 +1,70 @@
 "use client";
 
 import Link from "next/link";
-import { Database } from '@/types/database.types';
+import { Database } from "@/types/database.types";
+import { hover } from "framer-motion";
 
-type Roadmap = Database['public']['Tables']['roadmaps']['Row'];
+type Roadmap = Database["public"]["Tables"]["roadmaps"]["Row"];
 
 type RoadmapCardProps = {
-  roadmap: Pick<Roadmap, 'id' | 'title' | 'description' | 'icon'>;
+  roadmap: Pick<Roadmap, "id" | "title" | "description" | "icon">;
   onSelect: (id: string) => void;
   isSelected?: boolean;
 };
 
-export default function RoadmapCard({ roadmap, onSelect, isSelected = false }: RoadmapCardProps) {
+export default function RoadmapCard({
+  roadmap,
+  onSelect,
+  isSelected = false,
+}: RoadmapCardProps) {
   return (
-    <div
-      className={`bg-primary shadow-lg p-5 w-[300px] h-[300px] flex flex-col items-center justify-center gap-[15px] rounded-full text-bg transition-transform duration-300 hover:-translate-y-1 ${isSelected ? "border-[5px] border-accent" : ""}`}
-      onClick={() => onSelect(roadmap.id)}
-    >
+    <article>
+      <button
+        onClick={() => onSelect(roadmap.id)}
+        className={`
+          w-full h-full text-left
+          rounded-2xl border p-6
+          transition-all duration-300
+          hover:-translate-y-1 hover:shadow-lg
+          hover:bg-black/10 hover:cursor-pointer
+          focus:outline-none focus-visible:ring-4 focus-visible:ring-accent/40
+          ${isSelected ? "border-accent ring-2 ring-accent/50" : "border-border"
 
-      <div className="text-4xl">
-        {roadmap.icon}
-      </div>
+          }
+        `}
+        aria-pressed={isSelected}
+      >
+        <div className="flex flex-col justify-between h-full gap-4">
+          <div
+            className="text-4xl"
+            aria-hidden
+          >
+            {roadmap.icon}
+          </div>
 
-      <h2 className="text-xl font-bold">{roadmap.title}</h2>
-      <p className="text-center">{roadmap.description}</p>
+          <h2 className="text-xl font-semibold">
+            {roadmap.title}
+          </h2>
 
-      <div className="">
-        <Link
-          href={`/roadmaps/${roadmap.id}`}
-          className="underline text-white"
-        >
-          Learn More
-        </Link>
-      </div>
-    </div>
+          {roadmap.description && (
+            <p className="text-sm text-text-secondary line-clamp-3">
+              {roadmap.description}
+            </p>
+          )}
+
+          <Link
+            href={`/roadmaps/${roadmap.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="
+             group mt-4 inline-flex items-center gap-1
+              text-sm font-medium text-primary
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-primary
+            "
+          >
+            Learn more → <span className="invisible group-hover:visible"> → →</span>
+          </Link>
+        </div>
+      </button>
+    </article>
   );
 }
